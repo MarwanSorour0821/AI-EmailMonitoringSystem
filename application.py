@@ -60,6 +60,7 @@ imap = imaplib.IMAP4_SSL(imap_server)
 imap.login(email_address, password)
 
 
+
 imap.select("Inbox")
 
 _, msgnumbers = imap.search(None, "ALL")
@@ -71,6 +72,7 @@ message = email.message_from_bytes(data[0][1])
 print(f'message number; {Latest_Message_Number}')
 print(f'From; {message.get('From')}')
 print(f'To; {message.get('To')}')
+print(f'Subject: {message.get('Subject')}')
 print(f'BCC; {message.get('BCC')}')
 print(f'Data; {message.get('Date')}')
 
@@ -78,6 +80,24 @@ print(f'Data; {message.get('Date')}')
 part = message.get_payload()[0]  # Assuming the text/plain part is the first one
 if part.get_content_type() == "text/plain":
     email_content = part.get_payload(decode=True).decode()  # Decode and store the content
+
+links = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', email_content)
+
+#Tokenize email content and email subject
+
+#Check if Null
+subject_tokenized = word_tokenize(message.get('Subject'))
+text_tokenized = word_tokenize(email_content)
+
+email_evaluation = [text_tokenized, subject_tokenized]
+print(email_evaluation)
+
+relatedLink = []
+for keyword in email_evaluation:
+    if keyword in links:
+        relatedLink.append(keyword)
+
+
 
 print("Content:")
 print(email_content) 
