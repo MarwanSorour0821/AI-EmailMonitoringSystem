@@ -1,13 +1,29 @@
 import nltk
-from nltk.tokenize import word_tokenize
+import ssl
 from nltk.corpus import stopwords
+import re
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.tokenize import PunktSentenceTokenizer
+import pickle
 import imaplib
 import email
+import text2emotion as te
+import pandas as pd 
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
 
-nltk_data_path = "/Users/marwansorour/Desktop/AI-EmailMonitoringSystem"
-nltk.data.path.append(nltk_data_path)
 
-nltk.download('stopwords', download_dir=nltk_data_path)
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
+nltk.download('punkt')
+nltk.download('stopwords')
 
 imap_server = "imap.gmail.com"
 email_address = "marwansorour08212003@gmail.com"
@@ -16,6 +32,11 @@ password = "qnqq woyn tsat znoq"
 imap = imaplib.IMAP4_SSL(imap_server)
 imap.login(email_address, password)
 
+punkt_path = '/Users/marwansorour/Desktop/AI-EmailMonitoringSystem/english.pickle'
+
+# Load the Punkt tokenizer using the specified path
+with open(punkt_path, 'rb') as file:
+    punkt_tokenizer = PunktSentenceTokenizer(pickle.load(file))
 
 imap.select("Inbox")
 
@@ -39,20 +60,34 @@ if part.get_content_type() == "text/plain":
 print("Content:")
 print(email_content) 
 
-nltk.download('punkt')
-#nltk.download("stopwords")
+
+
 stop_words = set(stopwords.words('english'))
 
+
+
 #tokenize email content and convert to lower case so that it is case insensitive 
-tokens = word_tokenize(email_content.lower())
+tokens = sent_tokenize(email_content.lower())
+
+print(tokens)
 
 #Check if there are non-alphanumeric characters 
-filtered_tokens = [word for word in tokens if word.isalnum() and word not in stop_words]
+filtered_tokens = [word for word in tokens if word.isalnum()]
+print(filtered_tokens)
+
 
 key_word_matching = ["urgent", "loss of opportunity", "action required", "do not want to miss", "immediately", "consequences"]
 threat_score = sum(token in key_word_matching for token in filtered_tokens)
 
-threshold = 2  # Adjust threshold as needed
+
+print('Threat Score: ', threat_score)
+
+threshold = 1  # Adjust threshold as needed
+
+threat_score = 0
+
+
+   
 
 # Classification
 if threat_score >= threshold:
@@ -61,4 +96,5 @@ else:
     print("This email does not contain threats or urgencies.")
 
 
+# stopWords.close()
 imap.close()
