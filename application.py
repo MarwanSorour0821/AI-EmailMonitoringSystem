@@ -25,6 +25,33 @@ else:
 nltk.download('punkt')
 nltk.download('stopwords')
 
+data = pd.read_csv('Phishing_Email.csv')
+
+x = data['Email Text']
+y = data['Email Type']
+
+
+print(data.head())
+#What does this do
+vectorizer  = TfidfVectorizer(max_features=5000)
+
+x2 = x.fillna('')
+
+X_Tfidf = vectorizer.fit_transform(x2)
+X_train, X_test, y_train, y_test = train_test_split(X_Tfidf, y, test_size=0.2, random_state=42)
+
+#Train logistical regression classifier
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+#Evaluate trained model
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+
 imap_server = "imap.gmail.com"
 email_address = "marwansorour08212003@gmail.com"
 password = "qnqq woyn tsat znoq"
@@ -32,11 +59,6 @@ password = "qnqq woyn tsat znoq"
 imap = imaplib.IMAP4_SSL(imap_server)
 imap.login(email_address, password)
 
-punkt_path = '/Users/marwansorour/Desktop/AI-EmailMonitoringSystem/english.pickle'
-
-# Load the Punkt tokenizer using the specified path
-with open(punkt_path, 'rb') as file:
-    punkt_tokenizer = PunktSentenceTokenizer(pickle.load(file))
 
 imap.select("Inbox")
 
@@ -60,41 +82,9 @@ if part.get_content_type() == "text/plain":
 print("Content:")
 print(email_content) 
 
+new_email = [email_content]
+new_email_tfidf = vectorizer.transform(new_email)
+prediction = model.predict(new_email_tfidf)
+print("Prediction:", prediction)
 
-
-stop_words = set(stopwords.words('english'))
-
-
-
-#tokenize email content and convert to lower case so that it is case insensitive 
-tokens = sent_tokenize(email_content.lower())
-
-print(tokens)
-
-#Check if there are non-alphanumeric characters 
-filtered_tokens = [word for word in tokens if word.isalnum()]
-print(filtered_tokens)
-
-
-key_word_matching = ["urgent", "loss of opportunity", "action required", "do not want to miss", "immediately", "consequences"]
-threat_score = sum(token in key_word_matching for token in filtered_tokens)
-
-
-print('Threat Score: ', threat_score)
-
-threshold = 1  # Adjust threshold as needed
-
-threat_score = 0
-
-
-   
-
-# Classification
-if threat_score >= threshold:
-    print("This email contains threats or urgencies.")
-else:
-    print("This email does not contain threats or urgencies.")
-
-
-# stopWords.close()
 imap.close()
