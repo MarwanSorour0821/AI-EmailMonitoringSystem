@@ -15,24 +15,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
 
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
-else:
-    ssl._create_default_https_context = _create_unverified_https_context
-
-nltk.download('punkt')
-nltk.download('stopwords')
-
 data = pd.read_csv('Phishing_Email.csv')
 
 x = data['Email Text']
 y = data['Email Type']
 
-
-print(data.head())
-#What does this do
 vectorizer  = TfidfVectorizer(max_features=5000)
 
 x2 = x.fillna('')
@@ -82,21 +69,6 @@ if part.get_content_type() == "text/plain":
     email_content = part.get_payload(decode=True).decode()  # Decode and store the content
 
 links = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', email_content)
-
-#Tokenize email content and email subject
-
-#Check if Null
-subject_tokenized = word_tokenize(message.get('Subject'))
-text_tokenized = word_tokenize(email_content)
-
-email_evaluation = [text_tokenized, subject_tokenized]
-print(email_evaluation)
-
-relatedLink = []
-for keyword in email_evaluation:
-    if keyword in links:
-        relatedLink.append(keyword)
-
 
 
 print("Content:")
