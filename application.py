@@ -40,8 +40,8 @@ print(classification_report(y_test, y_pred))
 
 
 imap_server = "imap.gmail.com"
-email_address = "marwansorour08212003@gmail.com"
-password = "qnqq woyn tsat znoq"
+email_address = input("Enter your Gmail address: ")
+password = input("Enter application password: ")
 
 imap = imaplib.IMAP4_SSL(imap_server)
 imap.login(email_address, password)
